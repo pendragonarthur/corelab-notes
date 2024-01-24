@@ -15,15 +15,6 @@ const Header: React.FC<IHeaderTab> = ({ handleIsShown, onSearch }) => {
     const title = e.target.value;
     setSearch(title);
     onSearch(title);
-    try {
-      const response = await axios.get(
-        `http://localhost:5000/getTaskByTitle/${title}`
-      );
-      console.log("Task fetched", response.data);
-      return response.data;
-    } catch (error) {
-      console.log("Failed to fetch task", error);
-    }
   };
 
   return (

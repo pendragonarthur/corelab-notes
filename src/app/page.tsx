@@ -4,11 +4,31 @@ import NoteList from "./components/NoteList";
 import CreateNote from "./components/CreateNote";
 import FilterTab from "./components/FilterTab";
 import axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { INote } from "./components/Note";
 
 const Home = () => {
+  // Initializing useState
   const [isShown, setIsShown] = useState(false);
   const [search, setSearch] = useState("");
+  const [allNotes, setAllNotes] = useState<INote[]>([]);
+
+  const filteredNotes = allNotes.filter((note: INote) => {
+    return note.title.toLowerCase().includes(search.toLowerCase());
+  });
+
+  // Getting all tasks
+  const getAllNotes = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/getAllNotes");
+      setAllNotes(response.data);
+    } catch (error) {
+      console.log("Failed to fetch tasks", error);
+    }
+  };
+  useEffect(() => {
+    getAllNotes();
+  }, []);
 
   const handleSearch = (search: string) => {
     setSearch(search);
@@ -25,10 +45,10 @@ const Home = () => {
         {isShown && <FilterTab />}
       </div>
       <div className="md:grid md:place-items-center px-4 mb-20">
-        <CreateNote />
+        <CreateNote onUpdate={getAllNotes} />
       </div>
       <div className="flex flex-col gap-4 p-4 h-screen">
-        <NoteList search={search} />
+        <NoteList filteredNotes={filteredNotes} onUpdate={getAllNotes} />
       </div>
     </main>
   );

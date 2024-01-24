@@ -9,22 +9,16 @@ import { useState } from "react";
 import { INote } from "./Note";
 import axios from "axios";
 
-const CreateNote = (props: INote) => {
+const CreateNote = ({ onUpdate }: { onUpdate: () => void }) => {
   // Initializing useState
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [isFavorited, setIsFavorited] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
-  const [selectedColor, setSelectedColor] = useState(props.taskColor);
-  const [text, setText] = useState("");
-  const maxCharacters = 150;
+  const [selectedColor, setSelectedColor] = useState("");
 
-  const handleChange = (e: any) => {
+  const handleChangeDescription = (e: any) => {
     setDescription(e.target.value);
-    const inputText = e.target.value;
-    if (inputText.length <= maxCharacters) {
-      setText(inputText);
-    }
   };
 
   const colors = ["#ffccd4", "#D2B48C", "#c8e6c9", "#b3e0ff"];
@@ -36,19 +30,20 @@ const CreateNote = (props: INote) => {
 
   // Consuming back-end
   const handleCreateNote = async () => {
-    if (!title || !description)
+    if (!title || !description) {
       return alert("Failed to create note. Description and title are required");
-    try {
-      const response = await axios.post("http://localhost:5000/postTask", {
-        title: title,
-        description: description,
-        isFavorite: isFavorited,
-        taskColor: selectedColor,
-      });
-      return response.data;
-    } catch (error) {
-      console.log("Failed to create note", error);
     }
+    await axios.post("http://localhost:5000/postTask", {
+      title: title,
+      description: description,
+      isFavorite: isFavorited,
+      taskColor: selectedColor,
+    });
+    onUpdate();
+    setTitle("");
+    setDescription("");
+    setSelectedColor("");
+    setIsFavorited(false);
   };
   // End of back-end function
 
@@ -65,6 +60,7 @@ const CreateNote = (props: INote) => {
             setTitle(e.target.value);
           }}
           placeholder="Title"
+          value={title}
         />
       </h2>
       <span className="w-full flex border-[1px] border-white my-2"></span>
@@ -79,10 +75,11 @@ const CreateNote = (props: INote) => {
       <textarea
         cols={80}
         rows={5}
+        maxLength={150}
         className="bg-transparent py-2 pl-2 outline-none"
         placeholder="Type to add a note"
-        value={text}
-        onChange={handleChange}
+        value={description}
+        onChange={handleChangeDescription}
       ></textarea>
       <div>
         <button
